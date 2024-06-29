@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:news_app/controllers/home_cubit/home_cubit.dart';
 import 'package:news_app/utils/route/app_routes.dart';
+import 'package:news_app/views/home/widgets/app_drawer.dart';
+import 'package:news_app/views/home/widgets/custom_carousel_slider.dart';
 import 'package:news_app/views/home/widgets/top_headlines_item.dart';
 
 class HomePage extends StatelessWidget {
@@ -9,10 +11,9 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // final size = MediaQuery.of(context).size;
     final cubit = BlocProvider.of<HomeCubit>(context);
     return Scaffold(
-        // drawer: const AppDrawer(),
+       drawer: const AppDrawer(),
         appBar: AppBar(
           title: const Text('Home'),
           actions: [
@@ -26,29 +27,30 @@ class HomePage extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(
             children: [
-              // Expanded(
-              //   child: BlocBuilder<HomeCubit, HomeState>(
-              //     bloc: cubit,
-              //     buildWhen: (previous, current) =>
-              //         current is SliderHeadlinesLoading ||
-              //         current is SliderHeadlinesLoaded ||
-              //         current is SliderHeadlinesError,
-              //     builder: (context, state) {
-              //       if (state is SliderHeadlinesLoading) {
-              //         return const CircularProgressIndicator.adaptive();
-              //       } else if (state is SliderHeadlinesLoaded) {
-              //         final topHeadlines = state.topHeadlines;
-              //         return CustomCarouselSlider(
-              //           articles: topHeadlines.articles,
-              //         );
-              //       } else if (state is SliderHeadlinesError) {
-              //         return Text(state.message);
-              //       } else {
-              //         return const SizedBox.shrink();
-              //       }
-              //     },
-              //   ),
-              // ),
+              Expanded(
+                child: BlocBuilder<HomeCubit, HomeState>(
+                  bloc: cubit,
+                  buildWhen: (previous, current) =>
+                      current is SliderHeadlinesLoading ||
+                      current is SliderHeadlinesLoaded ||
+                      current is SliderHeadlinesError,
+                  builder: (context, state) {
+                    if (state is SliderHeadlinesLoading) {
+                      return const Center(
+                          child: CircularProgressIndicator.adaptive());
+                    } else if (state is SliderHeadlinesLoaded) {
+                      final topHeadlines = state.topHeadlines;
+                      return CustomCarouselSlider(
+                        articles: topHeadlines.articles,
+                      );
+                    } else if (state is SliderHeadlinesError) {
+                      return Text(state.message);
+                    } else {
+                      return const SizedBox.shrink();
+                    }
+                  },
+                ),
+              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -67,44 +69,47 @@ class HomePage extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 8),
-              BlocBuilder<HomeCubit, HomeState>(
-                bloc: cubit,
-                buildWhen: (previous, current) =>
-                    current is TopHeadlinesLoading ||
-                    current is TopHeadlinesLoaded ||
-                    current is TopHeadlinesError,
-                builder: (context, state) {
-                  if (state is TopHeadlinesLoading) {
-                    return const CircularProgressIndicator.adaptive();
-                  } else if (state is TopHeadlinesLoaded) {
-                    final topHeadlineArticles =
-                        state.topHeadlinesApiResponse.articles;
-                    return Expanded(
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: topHeadlineArticles.length,
-                        itemBuilder: (context, index) {
-                          final article = topHeadlineArticles[index];
-                          return Padding(
-                            padding:
-                                const EdgeInsetsDirectional.only(end: 16.0),
-                            child: InkWell(
-                                onTap: () {
-                                  Navigator.pushNamed(
-                                      context, AppRoutes.article,
-                                      arguments: article);
-                                },
-                                child: TopHeadlinesItem(article: article)),
-                          );
-                        },
-                      ),
-                    );
-                  } else if (state is TopHeadlinesError) {
-                    return Text(state.message);
-                  } else {
-                    return const SizedBox.shrink();
-                  }
-                },
+              Expanded(
+                flex: 2,
+                child: BlocBuilder<HomeCubit, HomeState>(
+                  bloc: cubit,
+                  buildWhen: (previous, current) =>
+                      current is TopHeadlinesLoading ||
+                      current is GetArticlesLoaded ||
+                      current is TopHeadlinesError,
+                  builder: (context, state) {
+                    if (state is TopHeadlinesLoading) {
+                      return const Center(
+                          child: CircularProgressIndicator.adaptive());
+                    } else if (state is GetArticlesLoaded) {
+                      final topHeadlineArticles = state.articles;
+                      return SizedBox(
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: topHeadlineArticles.length,
+                          itemBuilder: (context, index) {
+                            final article = topHeadlineArticles[index];
+                            return Padding(
+                              padding:
+                                  const EdgeInsetsDirectional.only(end: 16.0),
+                              child: InkWell(
+                                  onTap: () {
+                                    Navigator.pushNamed(
+                                        context, AppRoutes.article,
+                                        arguments: article);
+                                  },
+                                  child: TopHeadlinesItem(article: article)),
+                            );
+                          },
+                        ),
+                      );
+                    } else if (state is TopHeadlinesError) {
+                      return Text(state.message);
+                    } else {
+                      return const SizedBox.shrink();
+                    }
+                  },
+                ),
               ),
             ],
           ),

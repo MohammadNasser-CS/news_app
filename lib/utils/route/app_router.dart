@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:news_app/controllers/home_cubit/home_cubit.dart';
+import 'package:news_app/controllers/search_cubit/search_cubit.dart';
+import 'package:news_app/models/top_headlines_request.dart';
 import 'package:news_app/utils/route/app_routes.dart';
 import 'package:news_app/views/article/article_page.dart';
+import 'package:news_app/views/home/bookmarked_page.dart';
 import 'package:news_app/views/home/home_page.dart';
 import 'package:news_app/views/not_found_page.dart';
+import 'package:news_app/views/search/search_page.dart';
 import 'package:news_app/views/top_headlines/top_headlines_page.dart';
 
 class AppRouter {
@@ -16,6 +20,14 @@ class AppRouter {
             create: (context) {
               final cubit = HomeCubit();
               cubit.getTopUsHeadlines();
+              cubit.getTopHeadlines(
+                TopHeadlinesRequest(
+                  country: 'us',
+                  category: 'technology',
+                  page: 1,
+                  pageSize: 5,
+                ),
+              );
               return cubit;
             },
             child: const HomePage(),
@@ -27,14 +39,26 @@ class AppRouter {
           builder: (_) => const ArticlePage(),
           settings: settings,
         );
-      // case AppRoutes.search:
-      //   return MaterialPageRoute(
-      //     builder: (_) => BlocProvider(
-      //       create: (context) => SearchCubit(),
-      //       child: const SearchPage(),
-      //     ),
-      //     settings: settings,
-      //   );
+      case AppRoutes.bookmarked:
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (context) {
+              final cubit = HomeCubit();
+              cubit.getBookmarkedArticles();
+              return cubit;
+            },
+            child: const BookMarkedPage(),
+          ),
+          settings: settings,
+        );
+      case AppRoutes.search:
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (context) => SearchCubit(),
+            child: const SearchPage(),
+          ),
+          settings: settings,
+        );
       case AppRoutes.topHeadlines:
         return MaterialPageRoute(
           builder: (_) => const TopHeadlinesPage(),
